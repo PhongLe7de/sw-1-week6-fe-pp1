@@ -1,34 +1,30 @@
 import { useState } from "react";
+import { useSignUp } from "../hooks/signupHook";
 import { useNavigate } from "react-router-dom";
-
 const SignupComponent = ({ setIsAuthenticated }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
+
   const navigate = useNavigate();
+  const {signup} = useSignUp()
 
-  const handleSignup = async () => {
-    try {
-      const response = await fetch("/api/users/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (response.ok) {
-        const user = await response.json();
-        localStorage.setItem("user", JSON.stringify(user));
-        console.log("User signed up successfully!");
-        setIsAuthenticated(true);
-        navigate("/");
+  const validation = (password, password2) => {
+      if(password === password2){
+        return true
       } else {
-        console.error("Signup failed", response);
+        false
       }
-    } catch (error) {
-      console.error("Error during signup:", error);
+  }
+  const handleSignUp = async () => {
+    if(!validation){
+      console.log('Password not correct')
+      return
     }
+    await signup({ email, password, password2, setIsAuthenticated, navigate });
   };
+
+
 
   return (
     <div className="form-container">
@@ -36,6 +32,7 @@ const SignupComponent = ({ setIsAuthenticated }) => {
       <label>
         email:
         <input
+          placeholder="Your Email"
           type="text"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -47,11 +44,22 @@ const SignupComponent = ({ setIsAuthenticated }) => {
         <input
           type="password"
           value={password}
+          placeholder="Your password"
           onChange={(e) => setPassword(e.target.value)}
         />
       </label>
+      <label>
+      Confirm password:
+        <input
+          type="password"
+          value={password2}
+          placeholder="Confirm your password"
+
+          onChange={(e) => setPassword2(e.target.value)}
+        />
+      </label>
       <br />
-      <button onClick={handleSignup}>Sign Up</button>
+      <button onClick={handleSignUp}>Sign Up</button>
     </div>
   );
 };
